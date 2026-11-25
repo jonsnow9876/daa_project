@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manav Rachna Smart Campus Route Optimizer | DAA Project</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Custom Stylesheet with Cache-Busting -->
+  <link rel="stylesheet" href="/static/css/styles.css?v=20261111_03">
+
+  <!-- Unconditional Cream-Yellowish Theme Enforcer -->
+  <style>
+    :root {
+      --bg-primary: #fbf7ee !important;
+      --bg-secondary: #f6f0df !important;
+      --bg-card: #ffffff !important;
+      --border-color: #e5dac0 !important;
+      --text-main: #1c1917 !important;
+      --text-muted: #57534e !important;
+    }
+    html, body {
+      background-color: #fbf7ee !important;
+      background-image: linear-gradient(180deg, #fdfbf2 0%, #f7f2e4 100%) !important;
+      color: #1c1917 !important;
+    }
+    .header-nav {
+      background: #ffffff !important;
+      border-bottom: 1px solid #e5dac0 !important;
+    }
+    .brand-text h1 {
+      color: #1c1917 !important;
+      background: none !important;
+      -webkit-text-fill-color: #1c1917 !important;
+    }
+    .control-card, .map-card, .step-controller-card, .evaluator-dashboard {
+      background: #ffffff !important;
+      border: 1px solid #e5dac0 !important;
+      box-shadow: 0 4px 10px -1px rgba(60, 45, 15, 0.08) !important;
+    }
+    .card-title {
+      color: #92400e !important;
+    }
+    #campus-svg-canvas {
+      background: #f6f0df !important;
+    }
+    .map-tool-btn, .btn-header, .btn-play-ctrl, .speed-selector select, .select-wrapper select {
+      background: #fbf7ee !important;
+      border: 1px solid #e5dac0 !important;
+      color: #1c1917 !important;
+    }
+    .algo-card {
+      background: #fdfbf7 !important;
+      border: 1px solid #e5dac0 !important;
+    }
+    .algo-info h4 {
+      color: #1c1917 !important;
+    }
+    .algo-card.active {
+      background: #fef9c3 !important;
+      border-color: #d97706 !important;
+    }
+    .algo-badge {
+      background: #f5eedb !important;
+      color: #78350f !important;
+      border: 1px solid #e2d4b7 !important;
+    }
+    .algo-card.active .algo-badge {
+      background: #d97706 !important;
+      color: #ffffff !important;
+    }
+    .btn-primary {
+      background: #d97706 !important;
+      color: #ffffff !important;
+      border-color: #b45309 !important;
+    }
+    .btn-secondary {
+      background: #fef3c7 !important;
+      color: #92400e !important;
+      border: 1px solid #f59e0b !important;
+    }
+    .metric-card, .heap-state-box, .trace-terminal-box {
+      background: #fbf7ee !important;
+      border: 1px solid #e5dac0 !important;
+    }
+    .metric-info h5 {
+      color: #57534e !important;
+    }
+    .metric-info h3 {
+      color: #1c1917 !important;
+    }
+    .metric-icon-box {
+      background: #ffffff !important;
+      border: 1px solid #e5dac0 !important;
+    }
+    .dashboard-nav-tabs {
+      background: #f7f2e4 !important;
+      border-bottom: 1px solid #e5dac0 !important;
+    }
+    .tab-btn {
+      color: #57534e !important;
+    }
+    .tab-btn.active {
+      color: #92400e !important;
+      border-bottom-color: #d97706 !important;
+      background: #ffffff !important;
+    }
+    .daa-table th {
+      background: #fbf7ed !important;
+      color: #57534e !important;
+      border-bottom: 1px solid #e5dac0 !important;
+    }
+    .daa-table td {
+      border-bottom: 1px solid #f0e7d5 !important;
+      color: #1c1917 !important;
+    }
+    .matrix-grid-table th {
+      background: #f6f0df !important;
+      color: #78350f !important;
+      border: 1px solid #e5dac0 !important;
+    }
+    .matrix-grid-table td {
+      background: #ffffff !important;
+      border: 1px solid #ede4cf !important;
+      color: #1c1917 !important;
+    }
+    .map-legend-overlay {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border: 1px solid #e5dac0 !important;
+      color: #57534e !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="header-nav">
+    <div class="brand-wrapper">
+      <div class="brand-icon-box">
+        <i class="fa-solid fa-graduation-cap"></i>
+      </div>
+      <div class="brand-text">
+        <h1>Manav Rachna Smart Campus Route Optimizer</h1>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-header" id="preset-benchmark-all" title="Run all 4 algorithms concurrently">
+        <i class="fa-solid fa-chart-line"></i> Benchmark Suite
+      </button>
+      <button class="btn-header" id="preset-floyd-matrix" title="Inspect full Floyd-Warshall 16x16 matrix">
+        <i class="fa-solid fa-table-cells"></i> Matrix Viewer
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="main-container">
+    
+    <!-- Left Sidebar: Route Controls -->
+    <aside class="sidebar-panel">
+      
+      <!-- 1. Location Selection Card -->
+      <section class="control-card">
+        <h3 class="card-title">
+          <i class="fa-solid fa-location-crosshairs"></i> Campus Waypoints
+        </h3>
+
+        <div class="location-pickers">
+          <div class="input-group">
+            <label for="select-start-node">
+              <span><i class="fa-solid fa-circle-dot" style="color:#16a34a"></i> START LOCATION</span>
+              <span class="pin-hint"><i class="fa-solid fa-hand-pointer"></i> Click map to pick</span>
+            </label>
+            <div class="select-wrapper">
+              <select id="select-start-node">
+                <!-- Populated dynamically via JavaScript -->
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-swap-locations" id="btn-swap-locations" title="Swap Start & Destination">
+            <i class="fa-solid fa-arrow-right-arrow-left"></i>
+          </button>
+
+          <div class="input-group">
+            <label for="select-target-node">
+              <span><i class="fa-solid fa-location-pin" style="color:#dc2626"></i> DESTINATION LOCATION</span>
+              <span class="pin-hint"><i class="fa-solid fa-hand-pointer"></i> Click map to pick</span>
+            </label>
+            <div class="select-wrapper">
+              <select id="select-target-node">
+                <!-- Populated dynamically via JavaScript -->
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Algorithm Selection Card -->
+      <section class="control-card">
+        <h3 class="card-title">
+          <i class="fa-solid fa-brain"></i> Graph Routing Algorithms
+        </h3>
+
+        <div class="algo-select-wrapper">
+          
+          <div class="algo-card active" data-algo="dijkstra">
+            <div class="algo-info">
+              <h4>Dijkstra's Algorithm</h4>
+              <span>Priority Queue (Min-Heap)</span>
+            </div>
+            <span class="algo-badge">O((V+E) log V)</span>
+          </div>
+
+          <div class="algo-card" data-algo="floyd_warshall">
+            <div class="algo-info">
+              <h4>Floyd–Warshall Algorithm</h4>
+              <span>All-Pairs Matrix DP</span>
+            </div>
+            <span class="algo-badge">O(V³) Precompute</span>
+          </div>
+
+          <div class="algo-card" data-algo="bfs">
+            <div class="algo-info">
+              <h4>Breadth-First Search (BFS)</h4>
+              <span>Minimum Edge-Hop Routing</span>
+            </div>
+            <span class="algo-badge">O(V + E)</span>
+          </div>
+
+          <div class="algo-card" data-algo="dfs">
+            <div class="algo-info">
+              <h4>Depth-First Search (DFS)</h4>
+              <span>Exploration & Reachability</span>
+            </div>
+            <span class="algo-badge">O(V + E)</span>
+          </div>
+
+          <div class="algo-card" data-algo="compare_all" style="border:1px solid #d97706;">
+            <div class="algo-info">
+              <h4 style="color:#b45309">Compare All 4 Algorithms</h4>
+              <span>Multi-criteria Evaluation Mode</span>
+            </div>
+            <span class="algo-badge" style="color:#b45309; background:#fef3c7;">Evaluator Suite</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 3. Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn-primary" id="btn-compute-route">
+          <i class="fa-solid fa-route"></i> Compute Optimal Route
+        </button>
+        <button class="btn-secondary" id="btn-start-simulation">
+          <i class="fa-solid fa-play"></i> Step-by-Step Simulation
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- Center Stage: Interactive Map & Analytical Dashboard -->
+    <div class="map-stage-wrapper">
+      
+      <!-- Interactive SVG Map Card -->
+      <div class="map-card">
+        
+        <!-- Map Floating Toolbar -->
+        <div class="map-toolbar">
+          <button class="map-tool-btn" id="btn-zoom-in" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+          <button class="map-tool-btn" id="btn-zoom-out" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+          <button class="map-tool-btn" id="btn-reset-view" title="Reset View"><i class="fa-solid fa-arrows-rotate"></i></button>
+        </div>
+
+        <!-- SVG Map Element -->
+        <svg id="campus-svg-canvas" viewBox="0 0 1000 700"></svg>
+
+        <!-- Node Hover Card / Tooltip -->
+        <div id="map-node-tooltip" class="node-tooltip"></div>
+
+        <!-- Map Legend Overlay -->
+        <div class="map-legend-overlay">
+          <div class="legend-item">
+            <span class="legend-dot" style="background:#16a34a;"></span>
+            <span>Start Node</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background:#dc2626;"></span>
+            <span>Destination Node</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background:#d97706;"></span>
+            <span>Active Step</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-line" style="background:#2563eb;"></span>
+            <span>Optimal Route</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Step-by-Step Playback Controller Panel -->
+      <div class="step-controller-card" id="step-controller-panel" style="display:none;">
+        <div class="controller-top-row">
+          <div class="playback-buttons">
+            <button class="btn-play-ctrl" id="btn-step-prev"><i class="fa-solid fa-backward-step"></i> Prev</button>
+            <button class="btn-play-ctrl" id="btn-step-play-pause"><i class="fa-solid fa-play"></i> Auto-Play</button>
+            <button class="btn-play-ctrl" id="btn-step-next">Next <i class="fa-solid fa-forward-step"></i></button>
+            <button class="btn-play-ctrl" id="btn-step-reset"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+          </div>
+
+          <div class="speed-selector">
+            <span>Playback Speed:</span>
+            <select id="playback-speed-select">
+              <option value="1200">0.5x (Slow)</option>
+              <option value="600" selected>1.0x (Normal)</option>
+              <option value="300">2.0x (Fast)</option>
+              <option value="120">5.0x (Turbo)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="step-scrubber-row">
+          <span class="step-counter-text" id="step-counter-text">Step 0 / 0</span>
+          <input type="range" id="step-scrubber-slider" min="0" max="0" value="0" style="flex:1;">
+        </div>
+
+        <div class="step-status-banner" id="step-status-banner">
+          Ready for algorithmic step-by-step tracing.
+        </div>
+      </div>
+
+      <!-- DAA Academic & Evaluator Dashboard -->
+      <div class="evaluator-dashboard">
+        
+        <!-- Dashboard Navigation Tabs -->
+        <nav class="dashboard-nav-tabs">
+          <button class="tab-btn active" data-tab="tab-summary">
+            <i class="fa-solid fa-gauge-high"></i> Route & Human Experience
+          </button>
+          <button class="tab-btn" data-tab="tab-trace">
+            <i class="fa-solid fa-terminal"></i> Step Trace & Min-Heap State
+          </button>
+          <button class="tab-btn" data-tab="tab-benchmark">
+            <i class="fa-solid fa-table-columns"></i> DAA Benchmark & Big-O
+          </button>
+          <button class="tab-btn" data-tab="tab-matrix">
+            <i class="fa-solid fa-border-all"></i> Floyd-Warshall Matrix
+          </button>
+        </nav>
+
+        <!-- TAB 1: Route Metrics & Human Experience -->
+        <div class="tab-content-panel active" id="tab-summary">
+          <div class="metrics-cards-grid">
+            <div class="metric-card">
+              <div class="metric-icon-box" style="color:#2563eb">
+                <i class="fa-solid fa-arrows-left-right"></i>
+              </div>
+              <div class="metric-info">
+                <h5>Physical Distance</h5>
+                <h3 id="metric-distance">-- m</h3>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon-box" style="color:#16a34a">
+                <i class="fa-regular fa-clock"></i>
+              </div>
+              <div class="metric-info">
+                <h5>Estimated Walk Time</h5>
+                <h3 id="metric-walk-time">-- min</h3>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon-box" style="color:#7c3aed">
+                <i class="fa-solid fa-shoe-prints"></i>
+              </div>
+              <div class="metric-info">
+                <h5>Step Count</h5>
+                <h3 id="metric-steps">-- steps</h3>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon-box" style="color:#d97706">
+                <i class="fa-solid fa-fire"></i>
+              </div>
+              <div class="metric-info">
+                <h5>Calorie Burn</h5>
+                <h3 id="metric-calories">-- kcal</h3>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon-box" style="color:#0284c7">
+                <i class="fa-solid fa-microchip"></i>
+              </div>
+              <div class="metric-info">
+                <h5>Execution Time</h5>
+                <h3 id="metric-runtime">-- ms</h3>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon-box" style="color:#dc2626">
+                <i class="fa-solid fa-circle-nodes"></i>
+              </div>
+              <div class="metric-info">
+                <h5>Nodes Visited</h5>
+                <h3 id="metric-nodes-visited">--</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trade-off Explanation Box -->
+          <div class="tradeoff-explainer-card">
+            <h4><i class="fa-solid fa-lightbulb"></i> Route Details</h4>
+            <p id="tradeoff-explanation-text">
+              Select Start and Destination locations to view the algorithmic justification and route details.
+            </p>
+          </div>
+        </div>
+
+        <!-- TAB 2: Step Trace & Min-Heap State -->
+        <div class="tab-content-panel" id="tab-trace">
+          <div class="trace-heap-grid">
+            
+            <!-- Left: Binary Min-Heap Frontier Inspection -->
+            <div class="heap-state-box">
+              <div class="section-subhead">
+                <span><i class="fa-solid fa-layer-group"></i> Min-Heap Frontier (PQ)</span>
+                <small style="color:#78716c; font-size:0.68rem;">Sorted by Priority</small>
+              </div>
+              <div class="heap-elements-list" id="heap-elements-container">
+                <div style="color:#78716c; font-size:0.75rem; text-align:center; padding:12px;">
+                  Run simulation to view Min-Heap state.
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Color-coded Execution Log Stream -->
+            <div class="trace-terminal-box">
+              <div class="section-subhead">
+                <span style="color:#b45309"><i class="fa-solid fa-terminal"></i> Execution Event Stream</span>
+                <small style="color:#78716c; font-size:0.68rem;">Click any line to jump to step</small>
+              </div>
+              <div class="trace-terminal-logs" id="trace-terminal-logs">
+                <div style="color:#78716c; font-size:0.75rem; text-align:center; padding:12px;">
+                  No active trace logs. Click "Step-by-Step Simulation".
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TAB 3: Benchmark Comparison & Big-O Table -->
+        <div class="tab-content-panel" id="tab-benchmark">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h4 style="font-size:0.85rem; color:#1c1917;">
+              <i class="fa-solid fa-stopwatch" style="color:#d97706"></i> Empirical Multi-Algorithm Benchmark Comparison
+            </h4>
+            <span style="font-size:0.75rem; color:#78716c">Real-time execution across 25 trials</span>
+          </div>
+
+          <div class="benchmark-table-wrapper">
+            <table class="daa-table">
+              <thead>
+                <tr>
+                  <th>Algorithm</th>
+                  <th>Time Complexity</th>
+                  <th>Space Complexity</th>
+                  <th>Runtime (ms)</th>
+                  <th>Total Distance</th>
+                  <th>Nodes Explored</th>
+                  <th>Reconstructed Path Sequence</th>
+                </tr>
+              </thead>
+              <tbody id="benchmark-table-body">
+                <!-- Populated via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Asymptotic Scaling Table -->
+          <div style="margin-top: 24px;">
+            <h4 style="font-size:0.85rem; color:#1c1917; margin-bottom: 10px;">
+              <i class="fa-solid fa-arrow-trend-up" style="color:#7c3aed"></i> Asymptotic Growth Comparison: O((V+E) log V) vs O(V³) vs O(V+E)
+            </h4>
+            <div class="benchmark-table-wrapper">
+              <table class="daa-table">
+                <thead>
+                  <tr>
+                    <th>Graph Size (|V|, |E|)</th>
+                    <th>Dijkstra (Min-Heap): O((V+E) log V)</th>
+                    <th>Floyd-Warshall: O(V³)</th>
+                    <th>BFS / DFS: O(V+E)</th>
+                  </tr>
+                </thead>
+                <tbody id="scaling-table-body">
+                  <!-- Populated via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: Floyd-Warshall Matrix Viewer -->
+        <div class="tab-content-panel" id="tab-matrix">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h4 style="font-size:0.85rem; color:#1c1917;">
+                <i class="fa-solid fa-table-cells" style="color:#d97706"></i> Floyd-Warshall All-Pairs Distance Matrix D<sup>(|V|)</sup>
+              </h4>
+              <p style="font-size:0.72rem; color:#78716c">
+                Precomputed 16×16 shortest distance matrix enabling O(1) query lookup for any landmark pair.
+              </p>
+            </div>
+            <div style="display:flex; gap:12px; font-size:0.75rem;">
+              <span class="badge-pill" style="color:#15803d; background:#dcfce7; border-color:#86efac;">
+                Precompute Time: <strong id="matrix-calc-time">-- ms</strong>
+              </span>
+              <span class="badge-pill" style="color:#1d4ed8; background:#dbeafe; border-color:#93c5fd;">
+                <strong id="matrix-dp-updates">--</strong>
+              </span>
+            </div>
+          </div>
+
+          <div class="matrix-viewer-container">
+            <table class="matrix-grid-table" id="floyd-warshall-matrix-table">
+              <!-- Populated dynamically via JavaScript -->
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Interactive Toast Notification -->
+  <div id="app-toast" class="toast-notice"></div>
+
+  <!-- Scripts with Cache-Busting -->
+  <script src="/static/js/campus_map.js?v=20261111_03"></script>
+  <script src="/static/js/visualizer.js?v=20261111_03"></script>
+  <script src="/static/js/app.js?v=20261111_03"></script>
+</body>
+</html>
